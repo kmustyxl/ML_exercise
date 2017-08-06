@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import linear_model, cross_validation, discriminant_analysis, datasets, decomposition, manifold
+from mpl_toolkits.mplot3d import Axes3D
 
 def load_data():
     diabetes = datasets.load_diabetes()
@@ -146,5 +147,37 @@ def plot_MDS(*data):
     ax.set_title('MDS')
     ax.legend(loc = 'best')
     plt.show()
-X, y = load_data_PCA()
-plot_MDS(X,y)
+
+def test_LinearDiscriminantAnalysis(*data):
+    X_train, X_test, y_train, y_test = data
+    lda = discriminant_analysis.LinearDiscriminantAnalysis()
+    lda.fit(X_train, y_train)
+    print('Coefficients:%s, intercept:%s'%(lda.coef_, lda.intercept_))
+    print('Score:%.2f'%lda.score(X_test, y_test))
+
+def plot_LDA(converted_X, y):
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    colors = 'rbg'
+    markers = 'o*s'
+    for target,color,marker in zip([0,1,2],colors,markers):
+        pos = (y == target).ravel()
+        X = converted_X[pos,:]
+        ax.scatter(X[:,0], X[:,1], X[:,2],color=color,marker=marker,label='target:%s'%target)
+    ax.legend(loc='best')
+    fig.suptitle('iris for LDA')
+    plt.show()
+
+# X_train, X_test, y_train, y_test = load_iris_data()
+# X = np.vstack((X_train, X_test))
+# y = np.vstack((y_train.reshape(y_train.size,1), y_test.reshape(y_test.size,1)))
+# lda = discriminant_analysis.LinearDiscriminantAnalysis()
+# lda.fit(X,y)
+# converted_X = np.dot(X, np.transpose(lda.coef_)) + lda.intercept_
+# plot_LDA(converted_X, y)
+
+def test_LinearDiscriminantAbalysis_shrinkage(*data):
+    X_train,X_test,y_train,y_test = data
+    shrinkages = np.linspace(0.0,1.0,num=20)
+    scores = []
+    for shrinkage in shrinkages:
